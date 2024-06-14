@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql:alpine-6.2-latest
+    ports:
+      - "10051:10051"
+    environment:
+      DB_SERVER_HOST: zabbix-db
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix
+      MYSQL_ROOT_PASSWORD: rootpassword
+    depends_on:
+      - zabbix-db
+
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-mysql:alpine-6.2-latest
+    ports:
+      - "8080:8080"
+    environment:
+      ZBX_SERVER_HOST: zabbix-server
+      DB_SERVER_HOST: zabbix-db
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix
+      MYSQL_ROOT_PASSWORD: rootpassword
+    depends_on:
+      - zabbix-server
+
+  zabbix-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - zabbix-db-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: [
+      '--character-set-server=utf8mb4',
+      '--collation-server=utf8mb4_bin',
+      '--init-file=/docker-entrypoint-initdb.d/init.sql'
+    ]
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+
+volumes:
+  zabbix-db-data:
