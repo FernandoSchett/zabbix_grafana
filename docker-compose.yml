@@ -9,6 +9,8 @@ services:
       MYSQL_USER: zabbix
       MYSQL_PASSWORD: zabbix
       MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - ./config/telegram.sh:/usr/lib/zabbix/alertscripts/telegram.sh
     depends_on:
       - zabbix-db
 
